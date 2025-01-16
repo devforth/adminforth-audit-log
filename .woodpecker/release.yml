@@ -26,7 +26,6 @@ steps:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
       - export $(cat ./deploy.vault.env | xargs)
-      - env
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
