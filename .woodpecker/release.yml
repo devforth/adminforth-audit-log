@@ -1,0 +1,42 @@
+clone:
+  git:
+    image: woodpeckerci/plugin-git
+    settings:
+      partial: false
+      depth: 5
+
+steps:
+  init-secrets:
+    image: infisical/cli
+    environment:
+      INFISICAL_TOKEN:
+        from_secret: VAULT_TOKEN
+    commands:
+      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > ./deploy.vault.env
+    secrets:
+      - VAULT_TOKEN
+
+  release:
+    image: node:20
+    when:
+      - event: push
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    commands:
+      - export $(cat ./deploy.vault.env | xargs)
+      - npm clean-install
+      - /bin/bash ./.woodpecker/buildRelease.sh
+      - npm audit signatures
+      - npx semantic-release
+
+  slack-on-failure:
+    # use curl because the plugin can't interpolate template
+    when:
+      - event: push
+        status: [failure, success]
+      - event: push
+    image: curlimages/curl
+    commands:
+      - export $(cat ./deploy.vault.env | xargs)
+      - /bin/sh ./.woodpecker/buildSlackNotify.sh
+
