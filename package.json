@@ -5,6 +5,10 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devforth/adminforth-audit-log.git"
+  },
   "scripts": {
     "rollout": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch && npm publish --access public",
     "build": "tsc",
