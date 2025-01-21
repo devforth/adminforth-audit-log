@@ -131,7 +131,13 @@ export default class AuditLogPlugin extends AdminForthPlugin {
           throw new Error(`Column ${this.options.resourceColumns.resourceDataColumnName} must be of type 'json'`)
         }
      
-        diffColumn.showIn = ['show']
+        diffColumn.showIn = {
+          show: true,
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        };
         diffColumn.components = {
           show: { 
             file: this.componentPath('AuditLogView.vue'),

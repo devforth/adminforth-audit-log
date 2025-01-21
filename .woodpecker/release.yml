@@ -23,7 +23,8 @@ steps:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     commands:
-      - export $(cat ./deploy.vault.env | xargs)
+      - apt update && apt install -y rsync
+      - export $(cat /woodpecker/deploy.vault.env | xargs)
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
