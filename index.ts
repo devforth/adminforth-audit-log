@@ -131,7 +131,13 @@ export default class AuditLogPlugin extends AdminForthPlugin {
           throw new Error(`Column ${this.options.resourceColumns.resourceDataColumnName} must be of type 'json'`)
         }
      
-        diffColumn.showIn = ['show']
+        diffColumn.showIn = {
+          show: true,
+          list: false,
+          edit: false,
+          create: false,
+          filter: false,
+        };
         diffColumn.components = {
           show: { 
             file: this.componentPath('AuditLogView.vue'),
@@ -148,16 +154,16 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         return;
       };
 
-      ['edit', 'delete'].forEach((hook) => {
-        resource.hooks[hook].afterSave.push(async ({resource, updates, adminUser, oldRecord, extra}) => {
-          return await this.createLogRecord(resource, hook as AllowedActionsEnum, updates, adminUser, oldRecord, extra)
-        })
+      resource.hooks.edit.afterSave.push(async ({ resource, updates, adminUser, oldRecord, extra }) => {
+        return await this.createLogRecord(resource, 'edit' as AllowedActionsEnum, updates, adminUser, oldRecord, extra)
       });
 
-      ['create'].forEach((hook) => {
-        resource.hooks[hook].afterSave.push(async ({resource, record, adminUser, extra}) => {
-          return await this.createLogRecord(resource, hook as AllowedActionsEnum, record, adminUser, undefined, extra)
-        })
+      resource.hooks.delete.afterSave.push(async ({ resource, record, adminUser, extra }) => {
+        return await this.createLogRecord(resource, 'delete' as AllowedActionsEnum, record, adminUser, record, extra)
+      });
+
+      resource.hooks.create.afterSave.push(async ({ resource, record, adminUser, extra }) => {
+        return await this.createLogRecord(resource, 'create' as AllowedActionsEnum, record, adminUser, undefined, extra)
       });
       
     })
