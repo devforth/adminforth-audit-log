@@ -11,8 +11,8 @@
     "url": "https://github.com/devforth/adminforth-audit-log.git"
   },
   "scripts": {
-    "prepare": "npm link adminforth",
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
+    "prepare": "npm link adminforth"
   },
   "author": "devforth",
   "license": "ISC",

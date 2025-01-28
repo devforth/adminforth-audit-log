@@ -22,10 +22,14 @@ steps:
     image: node:20
     when:
       - event: push
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
     commands:
+<<<<<<< HEAD
       - export $(cat /woodpecker/deploy.vault.env | xargs)
+=======
+      - apt update && apt install -y rsync
+      - export $(cat /woodpecker/deploy.vault.env | xargs)
+      - cat /woodpecker/deploy.vault.env
+>>>>>>> origin
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
