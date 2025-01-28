@@ -1,10 +1,11 @@
 {
   "name": "@adminforth/audit-log",
-  "version": "1.0.43",
+  "version": "1.0.0",
   "description": "AdminForth plugin for logging all actions (who did what and when)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "homepage": "https://adminforth.dev/docs/tutorial/Plugins/AuditLog/",
   "repository": {
     "type": "git",
     "url": "https://github.com/devforth/adminforth-audit-log.git"
