@@ -11,9 +11,8 @@
     "url": "https://github.com/devforth/adminforth-audit-log.git"
   },
   "scripts": {
-    "rollout": "tsc && rsync -av --exclude 'node_modules' custom dist/ && npm version patch && npm publish --access public",
-    "build": "tsc",
-    "prepare": "npm link adminforth"
+    "prepare": "npm link adminforth",
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
   },
   "author": "devforth",
   "license": "ISC",
