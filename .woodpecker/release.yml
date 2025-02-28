@@ -23,13 +23,8 @@ steps:
     when:
       - event: push
     commands:
-<<<<<<< HEAD
-      - export $(cat /woodpecker/deploy.vault.env | xargs)
-=======
       - apt update && apt install -y rsync
       - export $(cat /woodpecker/deploy.vault.env | xargs)
-      - cat /woodpecker/deploy.vault.env
->>>>>>> origin
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
