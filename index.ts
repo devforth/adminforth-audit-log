@@ -89,7 +89,22 @@ export default class AuditLogPlugin extends AdminForthPlugin {
    * @param data - The data to be stored in the audit log
    * @param user - The adminUser user performing the action
    */
-  logCustomAction = async (resourceId: string | null=null, recordId: string | null=null, actionId: string, data: Object, user: AdminUser, headers?: Record<string, string>) => {
+  logCustomAction = async (params: {
+      resourceId: string | null, 
+      recordId: string | null,
+      actionId: string,
+      oldData: Object | null,
+      data: Object,
+      user: AdminUser,
+      headers?: Record<string, string>
+  }) => {
+      const { resourceId, recordId, actionId, oldData, data, user, headers } = params;
+
+      // if type of params is not object, throw error
+      if (typeof params !== 'object') {
+        throw new Error('params must be an object, please check AdminFoirth AuditLog custom action documentation')
+      }
+    
     if (resourceId) {
       const resource = this.adminforth.config.resources.find((r) => r.resourceId === resourceId);
       if (!resource) {
@@ -101,7 +116,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: actionId,
-      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': {}, 'newRecord': data },
+      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldData || {}, 'newRecord': data },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
