@@ -130,9 +130,12 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
+    const auditLogResourceData = this.adminforth.config.resources.find((r) => r.resourceId === resourceConfig.resourceId);
+    let columnToModify = auditLogResourceData.columns.find((c) => c.name === this.options.resourceColumns.resourceIdColumnName);
     this.auditLogResource = resourceConfig.resourceId;
-
+    const existingResources = [];
     this.adminforth.config.resources.forEach((resource) => {
+      existingResources.push({value: resource.resourceId, label: resource.label});
       if (this.options.excludeResourceIds?.includes(resource.resourceId)) {
         return;
       }
@@ -182,5 +185,6 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       });
       
     })
+    columnToModify.enum = existingResources;
   }
 }
