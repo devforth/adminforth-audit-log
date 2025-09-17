@@ -131,7 +131,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
     const auditLogResourceData = this.adminforth.config.resources.find((r) => r.resourceId === resourceConfig.resourceId);
-    let columnToModify = auditLogResourceData.columns.find((c) => c.name === this.options.resourceColumns.resourceIdColumnName);
+    const columnToModify = auditLogResourceData.columns.find((c) => c.name === this.options.resourceColumns.resourceIdColumnName);
     this.auditLogResource = resourceConfig.resourceId;
     const existingResources = [];
     this.adminforth.config.resources.forEach((resource) => {
