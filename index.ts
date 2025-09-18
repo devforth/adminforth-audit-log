@@ -135,6 +135,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     this.auditLogResource = resourceConfig.resourceId;
     const existingResources = [];
     this.adminforth.config.resources.forEach((resource) => {
+
       existingResources.push({value: resource.resourceId, label: resource.label});
       if (this.options.excludeResourceIds?.includes(resource.resourceId)) {
         return;
@@ -183,7 +184,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       resource.hooks.create.afterSave.push(async ({ resource, record, adminUser, extra }) => {
         return await this.createLogRecord(resource, 'create' as AllowedActionsEnum, record, adminUser, undefined, extra)
       });
-      
+
     })
     columnToModify.enum = existingResources;
   }
