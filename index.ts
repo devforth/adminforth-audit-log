@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -51,7 +51,26 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         });
     }
 
-    const backendOnlyColumns = resource.columns.filter((c) => c.backendOnly);
+    const checks = await Promise.all(
+      resource.columns.map(async (c) => {
+        if (typeof c.backendOnly === "function") {
+          const result = await c.backendOnly({
+            adminUser: user,
+            resource,
+            meta: {},
+            source: ActionCheckSource.ShowRequest,
+            adminforth: this.adminforth,
+          });
+          return { col: c, result };
+        }
+        return { col: c, result: c.backendOnly ?? false };
+      })
+    );
+
+    const backendOnlyColumns = checks
+      .filter(({ result }) => result === true)
+      .map(({ col }) => col);
+    
     backendOnlyColumns.forEach((c) => {
         if (JSON.stringify(oldRecord[c.name]) != JSON.stringify(newRecord[c.name])) {
             if (action !== AllowedActionsEnum.delete) {
