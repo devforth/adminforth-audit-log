@@ -189,6 +189,19 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             columnName: this.options.resourceColumns.resourceCreatedColumnName,
             direction: AdminForthSortDirections.desc
         }
+
+        resource.options = resource.options || {} as any;
+        resource.options.pageInjections = resource.options.pageInjections || {} as any;
+        resource.options.pageInjections.show = resource.options.pageInjections.show || {} as any;
+        if (!resource.options.pageInjections.show.bottom) {
+          resource.options.pageInjections.show.bottom = [] as any[];
+        } else if (!Array.isArray(resource.options.pageInjections.show.bottom)) {
+          resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
+        }
+        const bottom = resource.options.pageInjections.show.bottom as any[];
+        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId } } as any;
+        const already = bottom.some((d: any) => d?.file === compDecl.file);
+        if (!already) bottom.push(compDecl);
         return;
       };
 
