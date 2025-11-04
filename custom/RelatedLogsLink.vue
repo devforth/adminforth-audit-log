@@ -22,8 +22,19 @@ const linkHref = computed(() => {
     const resourceIdCol = props.meta.resourceColumns.resourceIdColumnName;
     const recordIdCol = props.meta.resourceColumns.resourceRecordIdColumnName;
 
-    const recordId = props.record[recordIdCol];
-    const resourceId = props.record[resourceIdCol];
+    const auditResourceId = props.meta?.auditLogResourceId || 'audit_log';
+    const isAuditLogResource = props.resource?.resourceId === auditResourceId;
+
+    let resourceId: any;
+    let recordId: any;
+    if (isAuditLogResource) {
+      resourceId = props.record?.[resourceIdCol];
+      recordId = props.record?.[recordIdCol];
+    } else {
+      const pkColName = props.resource?.columns?.find((c: any) => c.primaryKey)?.name;
+      resourceId = props.resource?.resourceId;
+      recordId = pkColName ? props.record?.[pkColName] : undefined;
+    }
 
     const params = new URLSearchParams();
     params.set('sort', `${props.meta.resourceColumns.resourceCreatedColumnName}__desc`);
@@ -31,7 +42,7 @@ const linkHref = computed(() => {
     if (resourceId) params.set(`filter__${resourceIdCol}__eq`, JSON.stringify(String(resourceId)));
 
     const base = typeof window !== 'undefined' ? window.location.origin : '';
-    return `${base}/resource/${props.resource.resourceId}?${params.toString()}`;
+    return `${base}/resource/${auditResourceId}?${params.toString()}`;
   } catch (e) {
     return '#';
   }
