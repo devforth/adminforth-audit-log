@@ -1,8 +1,8 @@
 <template>
     <div class="pt-2 flex justify-end">
-        <a :href="linkHref" class="text-lightPrimary hover:underline dark:text-darkPrimary break-all ">
+        <RouterLink :to="to" class="text-lightPrimary hover:underline dark:text-darkPrimary break-all ">
           <IconClockSolid class="inline w-4 h-4 me-1 mb-0.5"/>
-            Edits History</a>
+            Edits History</RouterLink>
     </div>
 </template>
 <script setup lang="ts">
@@ -17,7 +17,7 @@ const props = defineProps<{
   adminUser: any;
 }>();
 
-const linkHref = computed(() => {
+const to = computed(() => {
   try {
     const resourceIdCol = props.meta.resourceColumns.resourceIdColumnName;
     const recordIdCol = props.meta.resourceColumns.resourceRecordIdColumnName;
@@ -36,19 +36,19 @@ const linkHref = computed(() => {
       recordId = pkColName ? props.record?.[pkColName] : undefined;
     }
 
-    const params = new URLSearchParams();
-    params.set('sort', `${props.meta.resourceColumns.resourceCreatedColumnName}__desc`);
-    if (recordId) params.set(`filter__${recordIdCol}__ilike`, JSON.stringify(String(recordId)));
-    if (resourceId) params.set(`filter__${resourceIdCol}__eq`, JSON.stringify(String(resourceId)));
+    const query: Record<string, string> = {};
+    query['sort'] = `${props.meta.resourceColumns.resourceCreatedColumnName}__desc`;
+    if (recordId) query[`filter__${recordIdCol}__ilike`] = JSON.stringify(String(recordId));
+    if (resourceId) query[`filter__${resourceIdCol}__eq`] = JSON.stringify(String(resourceId));
 
-    const origin = typeof window !== 'undefined' ? window.location.origin : '';
-    const adminBase = (props.meta?.ADMIN_BASE_URL || '').toString();
-    const basePath = adminBase.replace(/\/$/, '').replace(/^\s+|\s+$/g, '');
-    const prefix = basePath ? `${basePath}` : '';
-    const path = `${prefix}/resource/${auditResourceId}`.replace(/\/\/+/, '/');
-    return `${origin}${path}?${params.toString()}`;
+    return {
+      name: 'resource-list',
+      params: { resourceId: auditResourceId },
+      query,
+    } as any;
   } catch (e) {
-    return '#';
+    console.error('Error computing RelatedLogsLink to:', e);
+    return { name: 'resource-list', params: { resourceId: 'audit_log' } } as any;
   }
 });
 </script>
