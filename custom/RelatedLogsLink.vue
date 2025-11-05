@@ -2,7 +2,8 @@
     <div class="pt-2 flex justify-end">
         <RouterLink :to="to" class="text-lightPrimary hover:underline dark:text-darkPrimary break-all ">
           <IconClockSolid class="inline w-4 h-4 me-1 mb-0.5"/>
-            Edits History</RouterLink>
+          Edits History
+        </RouterLink>
     </div>
 </template>
 <script setup lang="ts">
