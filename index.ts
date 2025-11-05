@@ -170,7 +170,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
       {
         const bottom = resource.options.pageInjections.show.bottom as any[];
-        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource } } as any;
+        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
         const already = bottom.some((d: any) => d?.file === compDecl.file);
         if (!already) bottom.push(compDecl);
       }
@@ -214,7 +214,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
           resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
         }
         const bottom = resource.options.pageInjections.show.bottom as any[];
-        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource } } as any;
+        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
         const already = bottom.some((d: any) => d?.file === compDecl.file);
         if (!already) bottom.push(compDecl);
         return;

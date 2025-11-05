@@ -41,8 +41,12 @@ const linkHref = computed(() => {
     if (recordId) params.set(`filter__${recordIdCol}__ilike`, JSON.stringify(String(recordId)));
     if (resourceId) params.set(`filter__${resourceIdCol}__eq`, JSON.stringify(String(resourceId)));
 
-    const base = typeof window !== 'undefined' ? window.location.origin : '';
-    return `${base}/resource/${auditResourceId}?${params.toString()}`;
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
+    const adminBase = (props.meta?.ADMIN_BASE_URL || '').toString();
+    const basePath = adminBase.replace(/\/$/, '').replace(/^\s+|\s+$/g, '');
+    const prefix = basePath ? `${basePath}` : '';
+    const path = `${prefix}/resource/${auditResourceId}`.replace(/\/\/+/, '/');
+    return `${origin}${path}?${params.toString()}`;
   } catch (e) {
     return '#';
   }
