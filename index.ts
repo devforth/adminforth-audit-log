@@ -160,6 +160,21 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         return;
       }
 
+      resource.options = resource.options || {} as any;
+      resource.options.pageInjections = resource.options.pageInjections || {} as any;
+      resource.options.pageInjections.show = resource.options.pageInjections.show || {} as any;
+      if (!resource.options.pageInjections.show.bottom) {
+        resource.options.pageInjections.show.bottom = [] as any[];
+      } else if (!Array.isArray(resource.options.pageInjections.show.bottom)) {
+        resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
+      }
+      {
+        const bottom = resource.options.pageInjections.show.bottom as any[];
+        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
+        const already = bottom.some((d: any) => d?.file === compDecl.file);
+        if (!already) bottom.push(compDecl);
+      }
+
       if (this.auditLogResource === resource.resourceId) {
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
         if (!diffColumn) {
@@ -189,6 +204,19 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             columnName: this.options.resourceColumns.resourceCreatedColumnName,
             direction: AdminForthSortDirections.desc
         }
+
+        resource.options = resource.options || {} as any;
+        resource.options.pageInjections = resource.options.pageInjections || {} as any;
+        resource.options.pageInjections.show = resource.options.pageInjections.show || {} as any;
+        if (!resource.options.pageInjections.show.bottom) {
+          resource.options.pageInjections.show.bottom = [] as any[];
+        } else if (!Array.isArray(resource.options.pageInjections.show.bottom)) {
+          resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
+        }
+        const bottom = resource.options.pageInjections.show.bottom as any[];
+        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
+        const already = bottom.some((d: any) => d?.file === compDecl.file);
+        if (!already) bottom.push(compDecl);
         return;
       };
 

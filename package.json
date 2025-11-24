@@ -20,7 +20,7 @@
   "author": "devforth",
   "license": "ISC",
   "dependencies": {
-    "adminforth": "^2.9.5",
+    "adminforth": "^2.12.0",
     "dayjs": "^1.11.11"
   },
   "release": {
