@@ -23,7 +23,7 @@
     "dayjs": "^1.11.11"
   },
   "peerDependencies": {
-    "adminforth": "^2.12.0"
+    "adminforth": "^2.13.0-next.51"
   },
   "release": {
     "plugins": [
