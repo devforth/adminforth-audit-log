@@ -4,8 +4,8 @@
     :to="to"
     class="flex items-center w-full gap-2
            
-           text-left text-sm font-medium leading-5
-           text-gray-700 hover:bg-gray-100
+           text-left text-sm leading-5
+           text-black hover:bg-gray-100
            dark:text-gray-200 dark:hover:bg-gray-700"
   >
     <IconClockSolid
