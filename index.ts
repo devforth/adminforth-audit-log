@@ -181,9 +181,12 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
           customComponent: {
             file: this.componentPath('RelatedLogsLink.vue'),
             meta: {
-              ...this.options,
               pluginInstanceId: this.pluginInstanceId,
               auditLogResourceId: this.auditLogResource,
+              resourceColumns: this.options.resourceColumns,
+              pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
+              isResourceHistory: false,
+              title: 'Edit History'
             }
           }
         });
