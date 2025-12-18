@@ -164,7 +164,7 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
       if (!resource.options.actions) {
         resource.options.actions = [];
       }
-      
+      if (resource.resourceId !== this.auditLogResource) {
       const historyActionId = 'audit_log_history_btn';
       if (!resource.options.actions.find((a) => a.id === historyActionId)) {
         resource.options.actions.push({
@@ -191,6 +191,7 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
           }
         });
       }
+    }
 
       if (this.auditLogResource === resource.resourceId) {
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
