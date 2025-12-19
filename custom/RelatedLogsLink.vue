@@ -3,7 +3,6 @@
     v-if="to"
     :to="to"
     class="flex items-center w-full gap-2
-           
            text-left text-sm leading-5
            text-black hover:bg-gray-100
            dark:text-gray-200 dark:hover:bg-gray-700"
@@ -31,24 +30,26 @@ const props = defineProps<{
 
 const route = useRoute(); 
 
+console.log('Current Route Name:', route.name);
+
 const to = computed(() => {
   try {
     const auditResourceId = props.meta?.auditLogResourceId || 'audit_log';
     const resourceColumns = props.meta?.resourceColumns;
-    const isResourceHistory = props.meta?.isResourceHistory; 
     
     if (!resourceColumns) return null;
 
-    const pkName = props.meta?.pkName || 'id';
+    const pkName = props.meta?.pkName 
   
+    const isShowPage = route.name === 'resource-show' || route.name === 'resource-edit';
+
     let recordId = props.record?.[pkName];
-    if (!recordId) {
+    
+    if (!recordId && isShowPage) {
         recordId = route.params.primaryKey || route.params.id;
     }
 
     const currentResourceId = props.resource?.resourceId || route.params.resourceId;
-
-    if (!isResourceHistory && !recordId) return null;
 
     const recordIdCol = resourceColumns.resourceRecordIdColumnName;
     const resourceIdCol = resourceColumns.resourceIdColumnName;
@@ -59,7 +60,7 @@ const to = computed(() => {
     if (createdCol) {
         query['sort'] = `${createdCol}__desc`;
     }
-    if (!isResourceHistory && recordId) {
+    if (recordId) {
         query[`filter__${recordIdCol}__eq`] = JSON.stringify(String(recordId));
     }
 

@@ -185,7 +185,6 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
               auditLogResourceId: this.auditLogResource,
               resourceColumns: this.options.resourceColumns,
               pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
-              isResourceHistory: false,
               title: 'Edit History'
             }
           }
@@ -251,7 +250,6 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
             auditLogResourceId: this.auditLogResource,
             resourceColumns: this.options.resourceColumns,
             pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
-            isResourceHistory: true,
             title: 'Edit History'
           }
         });
