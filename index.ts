@@ -146,7 +146,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   }
 
 
-  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
     const auditLogResourceData = this.adminforth.config.resources.find((r) => r.resourceId === resourceConfig.resourceId);
@@ -161,19 +161,36 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
 
       resource.options = resource.options || {} as any;
-      resource.options.pageInjections = resource.options.pageInjections || {} as any;
-      resource.options.pageInjections.show = resource.options.pageInjections.show || {} as any;
-      if (!resource.options.pageInjections.show.bottom) {
-        resource.options.pageInjections.show.bottom = [] as any[];
-      } else if (!Array.isArray(resource.options.pageInjections.show.bottom)) {
-        resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
+      if (!resource.options.actions) {
+        resource.options.actions = [];
       }
-      {
-        const bottom = resource.options.pageInjections.show.bottom as any[];
-        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
-        const already = bottom.some((d: any) => d?.file === compDecl.file);
-        if (!already) bottom.push(compDecl);
+      if (resource.resourceId !== this.auditLogResource) {
+      const historyActionId = 'audit_log_history_btn';
+      if (!resource.options.actions.find((a) => a.id === historyActionId)) {
+        resource.options.actions.push({
+          id: historyActionId,
+          label: 'Edit History',
+          showIn: {
+            show: true,
+            edit: true,
+            list: false,
+            showButton: false, 
+            showThreeDotsMenu: true 
+          },
+          action: async () => ({ ok: true }),
+          customComponent: {
+            file: this.componentPath('RelatedLogsLink.vue'),
+            meta: {
+              pluginInstanceId: this.pluginInstanceId,
+              auditLogResourceId: this.auditLogResource,
+              resourceColumns: this.options.resourceColumns,
+              pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
+              title: 'Edit History'
+            }
+          }
+        });
       }
+    }
 
       if (this.auditLogResource === resource.resourceId) {
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
@@ -204,19 +221,6 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             columnName: this.options.resourceColumns.resourceCreatedColumnName,
             direction: AdminForthSortDirections.desc
         }
-
-        resource.options = resource.options || {} as any;
-        resource.options.pageInjections = resource.options.pageInjections || {} as any;
-        resource.options.pageInjections.show = resource.options.pageInjections.show || {} as any;
-        if (!resource.options.pageInjections.show.bottom) {
-          resource.options.pageInjections.show.bottom = [] as any[];
-        } else if (!Array.isArray(resource.options.pageInjections.show.bottom)) {
-          resource.options.pageInjections.show.bottom = [resource.options.pageInjections.show.bottom] as any[];
-        }
-        const bottom = resource.options.pageInjections.show.bottom as any[];
-        const compDecl = { file: this.componentPath('RelatedLogsLink.vue'), meta: { ...this.options, pluginInstanceId: this.pluginInstanceId, auditLogResourceId: this.auditLogResource, ADMIN_BASE_URL: (this.adminforth as any)?.config?.baseUrlSlashed || '' } } as any;
-        const already = bottom.some((d: any) => d?.file === compDecl.file);
-        if (!already) bottom.push(compDecl);
         return;
       };
 
@@ -231,6 +235,25 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       resource.hooks.create.afterSave.push(async ({ resource, record, adminUser, extra }) => {
         return await this.createLogRecord(resource, 'create' as AllowedActionsEnum, record, adminUser, undefined, extra)
       });
+
+      if (resource.resourceId !== this.auditLogResource) {
+        resource.options.pageInjections = resource.options.pageInjections || {};
+        resource.options.pageInjections.list = resource.options.pageInjections.list || {};
+        
+        if (!resource.options.pageInjections.list.threeDotsDropdownItems) {
+          resource.options.pageInjections.list.threeDotsDropdownItems = [];
+        }
+
+        (resource.options.pageInjections.list.threeDotsDropdownItems as any[]).push({
+          file: this.componentPath('RelatedLogsLink.vue'),
+          meta: {
+            auditLogResourceId: this.auditLogResource,
+            resourceColumns: this.options.resourceColumns,
+            pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
+            title: 'Edit History'
+          }
+        });
+      }
 
     })
     columnToModify.enum = existingResources;

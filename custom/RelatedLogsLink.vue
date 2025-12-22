@@ -1,46 +1,72 @@
 <template>
-    <div class="pt-2 flex justify-end">
-        <RouterLink :to="to" class="text-lightPrimary hover:underline dark:text-darkPrimary break-all ">
-          <IconClockSolid class="inline w-4 h-4 me-1 mb-0.5"/>
-          Edits History
-        </RouterLink>
-    </div>
+  <RouterLink
+    v-if="to"
+    :to="to"
+    class="flex items-center w-full gap-2
+           text-left text-sm leading-5
+           text-black hover:bg-gray-100
+           dark:text-gray-200 dark:hover:bg-gray-700"
+  >
+    <IconClockSolid
+      class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
+    />
+    <span class="whitespace-nowrap">
+      {{ meta?.title || 'Edit History' }}
+    </span>
+  </RouterLink>
 </template>
+
+
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { IconClockSolid } from '@iconify-prerendered/vue-flowbite';
 
 const props = defineProps<{
-  column: any;
   record: any;
   meta: any;
   resource: any;
-  adminUser: any;
 }>();
+
+const route = useRoute(); 
+
+console.log('Current Route Name:', route.name);
 
 const to = computed(() => {
   try {
-    const resourceIdCol = props.meta.resourceColumns.resourceIdColumnName;
-    const recordIdCol = props.meta.resourceColumns.resourceRecordIdColumnName;
-
     const auditResourceId = props.meta?.auditLogResourceId || 'audit_log';
-    const isAuditLogResource = props.resource?.resourceId === auditResourceId;
+    const resourceColumns = props.meta?.resourceColumns;
+    
+    if (!resourceColumns) return null;
 
-    let resourceId: any;
-    let recordId: any;
-    if (isAuditLogResource) {
-      resourceId = props.record?.[resourceIdCol];
-      recordId = props.record?.[recordIdCol];
-    } else {
-      const pkColName = props.resource?.columns?.find((c: any) => c.primaryKey)?.name;
-      resourceId = props.resource?.resourceId;
-      recordId = pkColName ? props.record?.[pkColName] : undefined;
+    const pkName = props.meta?.pkName 
+  
+    const isShowPage = route.name === 'resource-show' || route.name === 'resource-edit';
+
+    let recordId = props.record?.[pkName];
+    
+    if (!recordId && isShowPage) {
+        recordId = route.params.primaryKey || route.params.id;
     }
 
+    const currentResourceId = props.resource?.resourceId || route.params.resourceId;
+
+    const recordIdCol = resourceColumns.resourceRecordIdColumnName;
+    const resourceIdCol = resourceColumns.resourceIdColumnName;
+    const createdCol = resourceColumns.resourceCreatedColumnName;
+
     const query: Record<string, string> = {};
-    query['sort'] = `${props.meta.resourceColumns.resourceCreatedColumnName}__desc`;
-    if (recordId) query[`filter__${recordIdCol}__ilike`] = JSON.stringify(String(recordId));
-    if (resourceId) query[`filter__${resourceIdCol}__eq`] = JSON.stringify(String(resourceId));
+
+    if (createdCol) {
+        query['sort'] = `${createdCol}__desc`;
+    }
+    if (recordId) {
+        query[`filter__${recordIdCol}__eq`] = JSON.stringify(String(recordId));
+    }
+
+    if (currentResourceId) {
+        query[`filter__${resourceIdCol}__eq`] = JSON.stringify(String(currentResourceId));
+    }
 
     return {
       name: 'resource-list',
@@ -53,4 +79,3 @@ const to = computed(() => {
   }
 });
 </script>
-
