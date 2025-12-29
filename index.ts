@@ -169,10 +169,8 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
       if (!resource.options.actions.find((a) => a.id === historyActionId)) {
         resource.options.actions.push({
           id: historyActionId,
-          label: 'Edit History',
+          name: 'Edit History',
           showIn: {
-            show: true,
-            edit: true,
             list: false,
             showButton: false, 
             showThreeDotsMenu: true 
