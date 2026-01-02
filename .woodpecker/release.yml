@@ -45,7 +45,7 @@ steps:
         status: [failure]
     commands:
       - . /woodpecker/deploy.vault.env
-      - /bin/sh ./.woodpecker/buildSlackNotify.sh
+      - /bin/sh ./.woodpecker/buildSlackNotify.sh failure
       
   slack-on-success: 
     image: curlimages/curl
@@ -54,4 +54,4 @@ steps:
         status: [success]
     commands:
       - . /woodpecker/deploy.vault.env
-      - /bin/sh ./.woodpecker/buildSlackNotify.sh
+      - /bin/sh ./.woodpecker/buildSlackNotify.sh success
