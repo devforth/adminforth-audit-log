@@ -7,34 +7,55 @@ clone:
 
 steps:
   init-secrets:
+    image: infisical/cli
     when:
       - event: push
-    image: infisical/cli
     environment:
       INFISICAL_TOKEN:
         from_secret: VAULT_TOKEN
     commands:
-      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
+      - infisical export \
+          --domain https://vault.devforth.io/api \
+          --format=dotenv-export \
+          --env="prod" \
+          > /woodpecker/deploy.vault.env
 
-  release:
+  build:
     image: node:20
     when:
       - event: push
     commands:
       - apt update && apt install -y rsync
-      - export $(cat /woodpecker/deploy.vault.env | xargs)
+      - set -a
+      - source /woodpecker/deploy.vault.env
+      - set +a
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
-      - npx semantic-release
 
-  slack-on-failure:
+  release:
+    image: node:20
     when:
       - event: push
-        status: [failure, success]
-      - event: push
-    image: curlimages/curl
+        branch: main
     commands:
-      - export $(cat /woodpecker/deploy.vault.env | xargs)
-      - /bin/sh ./.woodpecker/buildSlackNotify.sh
+      - set -a
+      - source /woodpecker/deploy.vault.env
+      - set +a
+      - npx semantic-release
 
+  slack:
+    image: curlimages/curl
+    when:
+      - event: push
+        status: [success, failure]
+    commands:
+      - |
+        if [ ! -f /woodpecker/deploy.vault.env ]; then
+          echo "No env file, skipping slack notify"
+          exit 0
+        fi
+      - set -a
+      - source /woodpecker/deploy.vault.env
+      - set +a
+      - /bin/sh ./.woodpecker/buildSlackNotify.sh
