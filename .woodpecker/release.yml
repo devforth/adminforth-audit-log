@@ -7,18 +7,14 @@ clone:
 
 steps:
   init-secrets:
-    image: infisical/cli
     when:
       - event: push
+    image: infisical/cli
     environment:
       INFISICAL_TOKEN:
         from_secret: VAULT_TOKEN
     commands:
-      - infisical export \
-          --domain https://vault.devforth.io/api \
-          --format=dotenv-export \
-          --env="prod" \
-          > /woodpecker/deploy.vault.env
+      - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
 
   build:
     image: node:20
