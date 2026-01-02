@@ -1,4 +1,4 @@
-clone: 
+clone:
   git:
     image: woodpeckerci/plugin-git
     settings:
