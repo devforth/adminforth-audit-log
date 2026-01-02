@@ -42,7 +42,7 @@ steps:
     image: curlimages/curl
     when:
       - event: push
-        status: [failure, success]
+        status: [failure]
     commands:
       - . /woodpecker/deploy.vault.env
       - /bin/sh ./.woodpecker/buildSlackNotify.sh
