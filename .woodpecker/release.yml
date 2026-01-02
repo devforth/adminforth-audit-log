@@ -22,9 +22,7 @@ steps:
       - event: push
     commands:
       - apt update && apt install -y rsync
-      - set -a
-      - source /woodpecker/deploy.vault.env
-      - set +a
+      - . /woodpecker/deploy.vault.env   
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
@@ -32,26 +30,19 @@ steps:
   release:
     image: node:20
     when:
-      - event: push
-        branch: main
+      - event:
+          - push
+        branch:
+          - main
     commands:
-      - set -a
-      - source /woodpecker/deploy.vault.env
-      - set +a
+      - . /woodpecker/deploy.vault.env
       - npx semantic-release
 
-  slack:
+  slack-on-failure:
     image: curlimages/curl
     when:
       - event: push
-        status: [success, failure]
+        status: [failure, success]
     commands:
-      - |
-        if [ ! -f /woodpecker/deploy.vault.env ]; then
-          echo "No env file, skipping slack notify"
-          exit 0
-        fi
-      - set -a
-      - source /woodpecker/deploy.vault.env
-      - set +a
+      - . /woodpecker/deploy.vault.env
       - /bin/sh ./.woodpecker/buildSlackNotify.sh
