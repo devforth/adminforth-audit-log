@@ -46,3 +46,11 @@ steps:
     commands:
       - . /woodpecker/deploy.vault.env
       - /bin/sh ./.woodpecker/buildSlackNotify.sh
+    slack-on-success: 
+      image: curlimages/curl
+      when:
+        - event: push
+          status: [success]
+      commands:
+        - . /woodpecker/deploy.vault.env
+        - /bin/sh ./.woodpecker/buildSlackNotify.sh
