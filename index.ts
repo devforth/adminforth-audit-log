@@ -29,6 +29,87 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
+  async getClientIpCountry(headers: Record<string, any>, clientIp: string | null): Promise<string | null> {
+
+    const headersLower = Object.keys(headers).reduce((acc: Record<string, any>, key: string) => {
+      acc[key.toLowerCase()] = headers[key];
+      return acc;
+    }, {});
+
+    // Cloudflare Check (Fastest)
+    const cfCountry = headersLower['cf-ipcountry'];
+    if (cfCountry && cfCountry !== 'XX') {
+      return cfCountry.toUpperCase();
+    }
+    
+    if (!clientIp || clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.includes('localhost')) {
+      return null;
+    }
+
+    //  DB CHECK
+    try {
+      const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
+
+      const ipCol = this.options.resourceColumns.resourceIpColumnName || 'ip_address';
+      const countryCol = this.options.resourceColumns.resourceCountryColumnName || 'country';
+      const createdCol = this.options.resourceColumns.resourceCreatedColumnName || 'created_at';
+
+      if (auditLogResource && ipCol && countryCol) {
+        const connector = this.adminforth.connectors[auditLogResource.dataSource];
+
+        const response: any = await connector.getData({
+          resource: auditLogResource,
+          filters: {
+             operator: 'and', 
+             subFilters: [    
+                { field: ipCol, operator: 'eq', value: clientIp },
+
+                { insecureRawSQL: `"${countryCol}" IS NOT NULL` }
+             ]
+          },
+          
+          sort: [{ field: createdCol, direction: 'desc' }], 
+          limit: 1, 
+          offset: 0
+        });
+
+        let rows: any[] = [];
+        if (Array.isArray(response)) {
+            rows = response;
+        } else if (response && typeof response === 'object' && 'data' in response && Array.isArray(response.data)) {
+            rows = response.data;
+        }
+
+        if (rows.length > 0) {
+          return rows[0][countryCol];
+        }
+      }
+    } catch (e) {
+    }
+
+    //  API Request
+    try {
+      const apiUrl = `https://geoip.vuiz.net/geoip?ip=${clientIp}`; 
+      
+      const response = await fetch(apiUrl);
+      
+      if (response.status !== 200) {
+          return null;
+      }
+
+      const data: any = await response.json();
+
+      const country = data.country_code || data.countryCode || data.country_code3 || data.country;
+
+      if (country && typeof country === 'string' && country.length === 2) {
+          return country.toUpperCase();
+      }
+
+    } catch (e) { 
+    }
+
+    return null;
+  }
   createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object, extra?: HttpExtra) => {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
@@ -84,16 +165,23 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             delete newRecord[c.name];
         }
     });
+    const clientIp = (this.options.resourceColumns.resourceIpColumnName && extra?.headers) ? this.adminforth.auth.getClientIp(extra.headers) : null;
+
+    const country = extra?.headers ? await this.getClientIpCountry(extra.headers, clientIp) : null;
 
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resource.resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: action,
-      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldRecord || {}, 'newRecord': newRecord },
+      [this.options.resourceColumns.resourceDataColumnName]: { 
+          'oldRecord': oldRecord || {}, 
+          'newRecord': { ...newRecord, ip: clientIp, country: country }
+      },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       // utc iso string
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
-      ...(this.options.resourceColumns.resourceIpColumnName && extra?.headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(extra.headers)} : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
+      ...(country && this.options.resourceColumns.resourceCountryColumnName ? {[this.options.resourceColumns.resourceCountryColumnName]: country} : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
@@ -131,15 +219,22 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         throw new Error(`Resource ${resourceId} not found. Did you mean ${similarResource.resourceId}?`)
       }
     }
+    const clientIp = (this.options.resourceColumns.resourceIpColumnName && headers) ? this.adminforth.auth.getClientIp(headers) : null;
+
+    const country = headers ? await this.getClientIpCountry(headers, clientIp) : null;
 
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: actionId,
-      [this.options.resourceColumns.resourceDataColumnName]: { 'oldRecord': oldData || {}, 'newRecord': data },
+      [this.options.resourceColumns.resourceDataColumnName]: { 
+          'oldRecord': oldData || {}, 
+          'newRecord': { ...data, ip: clientIp, country: country } 
+      },
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
-      ...(this.options.resourceColumns.resourceIpColumnName && headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(headers)} : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
+      ...(country && this.options.resourceColumns.resourceCountryColumnName ? {[this.options.resourceColumns.resourceCountryColumnName]: country} : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
