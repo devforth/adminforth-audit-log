@@ -16,42 +16,25 @@ steps:
     commands:
       - infisical export --domain https://vault.devforth.io/api --format=dotenv-export --env="prod" > /woodpecker/deploy.vault.env
 
-  build:
+  release:
     image: node:20
     when:
       - event: push
     commands:
       - apt update && apt install -y rsync
-      - . /woodpecker/deploy.vault.env   
+      - export $(cat /woodpecker/deploy.vault.env | xargs)
       - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - npm audit signatures
-
-  release:
-    image: node:20
-    when:
-      - event:
-          - push
-        branch:
-          - main
-    commands:
-      - . /woodpecker/deploy.vault.env
       - npx semantic-release
 
   slack-on-failure:
-    image: curlimages/curl
     when:
       - event: push
-        status: [failure]
-    commands:
-      - . /woodpecker/deploy.vault.env
-      - /bin/sh ./.woodpecker/buildSlackNotify.sh failure
-      
-  slack-on-success: 
-    image: curlimages/curl
-    when:
+        status: [failure, success]
       - event: push
-        status: [success]
+    image: curlimages/curl
     commands:
-      - . /woodpecker/deploy.vault.env
-      - /bin/sh ./.woodpecker/buildSlackNotify.sh success
+      - export $(cat /woodpecker/deploy.vault.env | xargs)
+      - /bin/sh ./.woodpecker/buildSlackNotify.sh
+

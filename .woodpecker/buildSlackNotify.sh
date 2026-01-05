@@ -6,7 +6,7 @@ COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
 STATUS=${1}  
 
-if [ "$STATUS" = "success" ]; then
+if [ "$CI_STEP_STATUS" = "success" ]; then
   MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
 
   curl  -s -X POST -H "Content-Type: application/json" -d '{
@@ -30,7 +30,7 @@ MESSAGE="Broke \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\` with commit _${CI_COMMIT_MESS
 CODE_BLOCK="\`\`\`$BUILD_LOG\n\`\`\`"
 
 echo "Sending slack message to developers $MESSAGE"
-
+# Send the message
 curl -sS -X POST -H "Content-Type: application/json" -d '{
   "username": "'"$CI_COMMIT_AUTHOR"'",
   "icon_url": "'"$CI_COMMIT_AUTHOR_AVATAR"'",
