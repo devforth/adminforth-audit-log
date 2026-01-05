@@ -10,7 +10,7 @@ import utc from 'dayjs/plugin/utc.js';
 import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource,  } from "adminforth";
 import { PluginOptions } from "./types.js";
 
-dayjs.extend(utc);
+dayjs.extend(utc);ascasd
 
 export default class AuditLogPlugin extends AdminForthPlugin {
  
