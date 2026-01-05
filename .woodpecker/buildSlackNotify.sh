@@ -5,11 +5,6 @@ set -x
 COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
 STATUS=${1}  
-echo "CI_STEP_STATUS: $CI_STEP_STATUS"
-echo "CI_PREV_PIPELINE_STATUS: $CI_PREV_PIPELINE_STATUS"
-echo "STATUS: $STATUS"
-
-env
 
 if [ "$STATUS" = "success" ]; then
   MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
