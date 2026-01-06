@@ -6,6 +6,7 @@ COMMIT_SHORT_SHA=$(echo $CI_COMMIT_SHA | cut -c1-8)
 
 STATUS=${1}  
 
+
 if [ "$STATUS" = "success" ]; then
   MESSAGE="Did a build without issues on \`$CI_REPO_NAME/$CI_COMMIT_BRANCH\`. Commit: _${CI_COMMIT_MESSAGE}_ (<$CI_COMMIT_URL|$COMMIT_SHORT_SHA>)"
 
