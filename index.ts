@@ -54,7 +54,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     }
     
     if (!clientIp || clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.includes('localhost')) {
-      //return null;
+      return null;
     }
 
     //  DB CHECK
