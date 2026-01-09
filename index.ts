@@ -47,20 +47,19 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       return acc;
     }, {});
 
-    // Cloudflare Check (Fastest)
-    const cfCountry = headersLower['cf-ipcountry'];
-    if (cfCountry && cfCountry !== 'XX') {
-      return cfCountry.toUpperCase();
-    }
-    
-    if (!clientIp || clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.includes('localhost')) {
-      return null;
+    if (this.options.isoCountryCodeRequestHeader) {
+      const cfCountry = headersLower[this.options.isoCountryCodeRequestHeader.toLowerCase()];
+      if (cfCountry && cfCountry !== 'XX') {
+        return cfCountry.toUpperCase();
+      }
     }
 
     //  DB CHECK
     const ipCol = this.options.resourceColumns.resourceIpColumnName;
     const countryCol = this.options.resourceColumns.resourceCountryColumnName;
 
+    //TODO fix ts-ignore after release new adminforth version with proper types
+    //@ts-ignore
     const existingLog = await this.adminforth.resource(this.auditLogResource).get(Filters.AND(Filters.EQ(ipCol, clientIp), Filters.IS_NOT_EMPTY(countryCol)));
     if (existingLog) {
       return existingLog[countryCol];
