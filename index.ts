@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource,  } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters,  } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -29,6 +29,64 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
+  async getIpAndCountry(headers: Record<string, any>): Promise<{ country: string | null, clientIp: string | null }> {
+    let clientIp: string | null = null;
+    if (this.options.resourceColumns.resourceIpColumnName) {
+      clientIp = this.adminforth.auth.getClientIp(headers);
+    }
+    let country: string | null = null;
+    if (this.options.resourceColumns.resourceCountryColumnName && clientIp) {
+      country = await this.getClientIpCountry(headers, clientIp);
+    }
+    return { country, clientIp };
+  }
+
+  async getClientIpCountry(headers: Record<string, any>, clientIp: string | null): Promise<string | null> {
+    const headersLower = Object.keys(headers).reduce((acc: Record<string, any>, key: string) => {
+      acc[key.toLowerCase()] = headers[key];
+      return acc;
+    }, {});
+
+    if (this.options.isoCountryCodeRequestHeader) {
+      const cfCountry = headersLower[this.options.isoCountryCodeRequestHeader.toLowerCase()];
+      if (cfCountry && cfCountry !== 'XX') {
+        return cfCountry.toUpperCase();
+      }
+    }
+
+    //  DB CHECK
+    const ipCol = this.options.resourceColumns.resourceIpColumnName;
+    const countryCol = this.options.resourceColumns.resourceCountryColumnName;
+
+    //TODO fix ts-ignore after release new adminforth version with proper types
+    //@ts-ignore
+    const existingLog = await this.adminforth.resource(this.auditLogResource).get(Filters.AND(Filters.EQ(ipCol, clientIp), Filters.IS_NOT_EMPTY(countryCol)));
+    if (existingLog) {
+      return existingLog[countryCol];
+    }
+    
+    //  API Request
+    try {
+      const apiUrl = `https://ipinfo.io/${clientIp}/json`;
+      
+      const response = await fetch(apiUrl);
+      if (response.status !== 200) {
+        return null;
+      }   
+
+      const data: any = await response.json();
+      const country = data.country;
+
+      if (country && typeof country === 'string' && country.length === 2) {
+          return country.toUpperCase();
+      }
+
+    } catch (e) { 
+      console.error('Error fetching IP country', e);
+    }
+
+    return null;
+  }
   createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object, extra?: HttpExtra) => {
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
@@ -85,6 +143,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         }
     });
 
+    const { country, clientIp } = await this.getIpAndCountry(extra?.headers || {});
+
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resource.resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: action,
@@ -93,7 +153,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       // utc iso string
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
-      ...(this.options.resourceColumns.resourceIpColumnName && extra?.headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(extra.headers)} : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
+      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
@@ -132,6 +193,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       }
     }
 
+    const { country, clientIp } = await this.getIpAndCountry(headers || {});
+
     const record = {
       [this.options.resourceColumns.resourceIdColumnName]: resourceId,
       [this.options.resourceColumns.resourceActionColumnName]: actionId,
@@ -139,8 +202,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
-      ...(this.options.resourceColumns.resourceIpColumnName && headers ? {[this.options.resourceColumns.resourceIpColumnName]: this.adminforth.auth.getClientIp(headers)} : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
+      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
+
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
   }

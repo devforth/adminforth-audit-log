@@ -35,8 +35,16 @@ export type PluginOptions = {
         resourceRecordIdColumnName: string
 
         resourceCreatedColumnName: string
+
+        resourceCountryColumnName?: string
         
         resourceIpColumnName?: string
     }
+ 
 
+    /*
+    * should be in format ISO 3166-1 alpha-2
+    * e.g. for ckloudflare it should be 'CF-IPCountry'
+    */
+    isoCountryCodeRequestHeader?: string;
 }
