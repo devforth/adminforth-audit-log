@@ -17,6 +17,9 @@ const newContent = JSON.stringify(props.record[props.meta.resourceColumns.resour
 const diffFile = ref();
 
 function initDiffFile() {
+  if ( Object.keys(JSON.parse(oldContent)).length === 0 && Object.keys(JSON.parse(newContent)).length === 0 ) {
+    return
+  }
   const file = generateDiffFile(
     'diff.json',
     oldContent,
@@ -51,6 +54,7 @@ watch([mode, theme], ([m, t]) => {
 
 <template>
   <DiffView
+    v-if="diffFile"
     :diff-file="diffFile"
     :diff-view-mode="mode"
     :diff-view-theme="theme === 'dark' ? 'dark' : 'light'"
@@ -58,5 +62,6 @@ watch([mode, theme], ([m, t]) => {
     :diff-view-wrap="true"
     :diff-view-font-size="14"
   />
+  <p v-else>No changes to display.</p>
 </template>
   
