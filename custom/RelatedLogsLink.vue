@@ -26,6 +26,8 @@ const props = defineProps<{
   record: any;
   meta: any;
   resource: any;
+  checkboxes?: (string | number)[];
+
 }>();
 
 const route = useRoute(); 
@@ -60,8 +62,14 @@ const to = computed(() => {
     if (createdCol) {
         query['sort'] = `${createdCol}__desc`;
     }
-    if (recordId) {
-        query[`filter__${recordIdCol}__eq`] = JSON.stringify(String(recordId));
+    if (props.checkboxes && props.checkboxes.length > 0) {
+      query[`filter__${recordIdCol}__in`] = JSON.stringify(
+        props.checkboxes.map(String)
+      );
+    }
+    else if (recordId) {
+       query[`filter__${recordIdCol}__eq`] =
+       JSON.stringify(String(recordId));
     }
 
     if (currentResourceId) {
