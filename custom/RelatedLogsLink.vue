@@ -3,9 +3,7 @@
     v-if="to"
     :to="to"
     class="flex items-center w-full gap-2
-           text-left text-sm leading-5
-           text-black hover:bg-gray-100
-           dark:text-gray-200 dark:hover:bg-gray-700"
+           text-left text-sm leading-5"
   >
     <IconClockSolid
       class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
