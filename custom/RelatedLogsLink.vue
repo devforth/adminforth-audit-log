@@ -1,23 +1,20 @@
 <template>
-  <RouterLink
-    v-if="to"
-    :to="to"
+  <div
     class="flex items-center w-full gap-2
-           text-left text-sm leading-5"
-  >
+           text-left text-sm leading-5">
     <IconClockSolid
       class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
     />
     <span class="whitespace-nowrap">
       {{ meta?.title || 'Edit History' }}
     </span>
-  </RouterLink>
+  </div>
 </template>
 
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { IconClockSolid } from '@iconify-prerendered/vue-flowbite';
 
 const props = defineProps<{
@@ -27,6 +24,13 @@ const props = defineProps<{
   checkboxes?: (string | number)[];
 
 }>();
+
+const router = useRouter();
+
+defineExpose({
+  click,
+});
+
 
 const route = useRoute(); 
 
@@ -84,4 +88,10 @@ const to = computed(() => {
     return { name: 'resource-list', params: { resourceId: 'audit_log' } } as any;
   }
 });
+
+function click() {
+  console.log('click');
+  debugger;
+  router.replace(to.value);
+}
 </script>
