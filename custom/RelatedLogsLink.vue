@@ -3,9 +3,7 @@
     v-if="to"
     :to="to"
     class="flex items-center w-full gap-2
-           text-left text-sm leading-5
-           text-black hover:bg-gray-100
-           dark:text-gray-200 dark:hover:bg-gray-700"
+           text-left text-sm leading-5"
   >
     <IconClockSolid
       class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
@@ -26,8 +24,6 @@ const props = defineProps<{
   record: any;
   meta: any;
   resource: any;
-  checkboxes?: (string | number)[];
-
 }>();
 
 const route = useRoute(); 
@@ -62,14 +58,8 @@ const to = computed(() => {
     if (createdCol) {
         query['sort'] = `${createdCol}__desc`;
     }
-    if (props.checkboxes && props.checkboxes.length > 0) {
-      query[`filter__${recordIdCol}__in`] = JSON.stringify(
-        props.checkboxes.map(String)
-      );
-    }
-    else if (recordId) {
-       query[`filter__${recordIdCol}__eq`] =
-       JSON.stringify(String(recordId));
+    if (recordId) {
+        query[`filter__${recordIdCol}__eq`] = JSON.stringify(String(recordId));
     }
 
     if (currentResourceId) {
