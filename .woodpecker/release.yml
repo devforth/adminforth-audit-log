@@ -23,9 +23,9 @@ steps:
     commands:
       - apt update && apt install -y rsync
       - . /woodpecker/deploy.vault.env   
-      - pnpm clean-install
+      - npm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
-      - pnpm audit signatures
+      - npm audit signatures
 
   release:
     image: node:20
