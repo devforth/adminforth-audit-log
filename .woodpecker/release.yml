@@ -24,7 +24,7 @@ steps:
       - apt update && apt install -y rsync
       - npm install -g pnpm 
       - . /woodpecker/deploy.vault.env   
-      - pnpm install
+      - pnpm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
       - pnpm audit signatures
 
