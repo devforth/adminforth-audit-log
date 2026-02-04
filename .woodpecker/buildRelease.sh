@@ -2,7 +2,7 @@
 #!/bin/bash
 
 # write npm run output both to console and to build.log
-npm run build 2>&1 | tee build.log
+pnpm run build 2>&1 | tee build.log
 build_status=${PIPESTATUS[0]}
 
 # if exist status from the npm run build is not 0
