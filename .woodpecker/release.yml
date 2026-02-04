@@ -22,8 +22,7 @@ steps:
       - event: push
     commands:
       - apt update && apt install -y rsync
-      - curl -fsSL https://get.pnpm.io/install.sh | sh -
-      - export PATH="$HOME/.local/share/pnpm:$PATH"
+      - npm install -g pnpm 
       - . /woodpecker/deploy.vault.env   
       - pnpm clean-install
       - /bin/bash ./.woodpecker/buildRelease.sh
