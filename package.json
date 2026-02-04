@@ -14,7 +14,8 @@
     "url": "https://github.com/devforth/adminforth-audit-log.git"
   },
   "scripts": {
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
+    "prepare": "npm link adminforth"
   },
   "author": "devforth",
   "license": "ISC",
@@ -22,7 +23,7 @@
     "dayjs": "^1.11.11"
   },
   "peerDependencies": {
-    "adminforth": ">=2.17.0-next.79"
+    "adminforth": "next"
   },
   "release": {
     "plugins": [
