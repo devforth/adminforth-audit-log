@@ -91,7 +91,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object, extra?: HttpExtra) => {
     if (user.isExternalUser) {
       // audit log does not support logging for external (non-adminforth) users.
-      return;
+      return { ok: true };
     }
     
     const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
@@ -187,7 +187,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       const { resourceId, recordId, actionId, oldData, data, user, headers } = params;
 
       if (user.isExternalUser) {
-        return;
+        return { ok: true };
       }
 
       // if type of params is not object, throw error
