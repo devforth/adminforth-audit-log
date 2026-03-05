@@ -18,6 +18,9 @@
   "dependencies": {
     "dayjs": "^1.11.11"
   },
+  "scripts": {
+    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
+  },
   "peerDependencies": {
     "adminforth": "^2.24.0"
   },
