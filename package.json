@@ -13,10 +13,6 @@
     "type": "git",
     "url": "https://github.com/devforth/adminforth-audit-log.git"
   },
-  "scripts": {
-    "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
-    "prepare": "pnpm link adminforth"
-  },
   "author": "devforth",
   "license": "ISC",
   "dependencies": {
