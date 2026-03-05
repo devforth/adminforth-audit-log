@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "tsc && rsync -av --exclude 'node_modules' custom dist/",
-    "prepare": "npm link adminforth"
+    "prepare": "pnpm link adminforth"
   },
   "author": "devforth",
   "license": "ISC",
