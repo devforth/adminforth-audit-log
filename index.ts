@@ -23,7 +23,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     this.options = options;
     this.shouldHaveSingleInstancePerWholeApp = () => true;
   }
-
+  //test-comment
   instanceUniqueRepresentation(pluginOptions: any) : string {
     return `single`;
   }
