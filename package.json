@@ -22,7 +22,7 @@
     "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
   },
   "peerDependencies": {
-    "adminforth": "^2.24.0"
+    "adminforth": "^2.30.0"
   },
   "release": {
     "plugins": [

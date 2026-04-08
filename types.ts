@@ -1,4 +1,6 @@
-export type PluginOptions = {
+import  {type PluginsCommonOptions } from "adminforth";
+
+export interface PluginOptions extends PluginsCommonOptions {
     /**
      * Id of the resource to be ignored from audit log.
     */
