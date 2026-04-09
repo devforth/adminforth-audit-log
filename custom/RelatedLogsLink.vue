@@ -19,6 +19,18 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { IconClockSolid } from '@iconify-prerendered/vue-flowbite';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
+function goToAuditLog() {
+  if (!to.value) return;
+  router.push(to.value);
+}
+
+defineExpose({
+  click: goToAuditLog,
+});
 
 const props = defineProps<{
   record: any;
