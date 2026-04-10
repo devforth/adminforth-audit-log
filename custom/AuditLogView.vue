@@ -1,9 +1,24 @@
 <script setup>
 import { useCoreStore } from '@/stores/core';
-import { computed, ref, watch } from 'vue';
-import "@git-diff-view/vue/styles/diff-view.css";
-import { DiffView, DiffModeEnum } from "@git-diff-view/vue";
-import { generateDiffFile } from "@git-diff-view/file";
+import { computed, ref, watch, defineAsyncComponent, onMounted } from 'vue';
+
+let DiffModeEnum = {
+  Unified: 'unified',
+  Split: 'split'
+};
+let generateDiffFile = null;
+
+onMounted(async () => {
+  DiffModeEnum = (await import("@git-diff-view/vue")).DiffModeEnum;
+  generateDiffFile = (await import("@git-diff-view/file")).generateDiffFile;
+  initDiffFile();
+});
+
+const DiffView = defineAsyncComponent(async () => {
+  await import("@git-diff-view/vue/styles/diff-view.css");
+  const { DiffView } = await import("@git-diff-view/vue");
+  return DiffView;
+});
 
 const props = defineProps(['column', 'record', 'meta', 'resource', 'adminUser']);
 const coreStore = useCoreStore();
@@ -38,7 +53,6 @@ function initDiffFile() {
   diffFile.value = file;
 }
 
-initDiffFile();
 
 watch([mode, theme], ([m, t]) => {
   if (!diffFile.value) return;
