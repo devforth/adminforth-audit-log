@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      adminforth:
-        specifier: ^2.30.0
-        version: 2.35.0(@types/node@22.19.13)(typescript@5.9.3)
       dayjs:
         specifier: ^1.11.11
         version: 1.11.19
@@ -18,6 +15,9 @@ importers:
       '@types/node':
         specifier: ^22.10.7
         version: 22.19.13
+      adminforth:
+        specifier: ^2.35.0
+        version: 2.35.0(@types/node@22.19.13)(typescript@5.9.3)
       semantic-release:
         specifier: ^24.2.1
         version: 24.2.9(typescript@5.9.3)
