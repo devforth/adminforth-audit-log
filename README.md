@@ -1,7 +1,31 @@
 # AdminForth AuditLog Plugin
 
-<img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /> <img src="https://woodpecker.devforth.io/api/badges/3848/status.svg" alt="Build Status" /> <a href="https://www.npmjs.com/package/@adminforth/audit-log"> <img src="https://img.shields.io/npm/dt/@adminforth/audit-log" alt="npm downloads" /></a> <a href="https://www.npmjs.com/package/@adminforth/audit-log"><img src="https://img.shields.io/npm/v/@adminforth/audit-log" alt="npm version" /></a> <a href="https://www.npmjs.com/package/@adminforth/audit-log">
+<img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /> <img src="https://woodpecker.devforth.io/api/badges/3848/status.svg" alt="Build Status" /> <a href="https://www.npmjs.com/package/@adminforth/audit-log"><img src="https://img.shields.io/npm/dm/@adminforth/audit-log" alt="npm downloads" /></a> <a href="https://www.npmjs.com/package/@adminforth/audit-log"><img src="https://img.shields.io/npm/v/@adminforth/audit-log" alt="npm version" /></a>
+
+[![Ask AI](https://tluma.ai/badge)](https://tluma.ai/ask-ai/devforth/adminforth)
 
 Allows you to log changes made to table records via adminforth.
 
-## For usage, see [AdminForth AuditLog Documentation](https://adminforth.dev/docs/tutorial/Plugins/AuditLog/)
+## Features
+
+- Log changes made to AdminForth records.
+- Track who changed what and when across resources.
+- Improve accountability for back-office actions.
+- Fit audit trails into existing admin workflows.
+
+## Documentation
+
+Full setup and configuration guide:
+
+[AdminForth AuditLog Documentation](https://adminforth.dev/docs/tutorial/Plugins/AuditLog/)
+
+## About AdminForth
+
+AdminForth is an open-source, agent-first admin framework for building robust admin panels and back-office applications faster.
+
+## Related links
+
+- [AdminForth website](https://adminforth.dev)
+- [npm package](https://www.npmjs.com/package/@adminforth/audit-log)
+- [More AdminForth plugins](https://adminforth.dev/docs/tutorial/ListOfPlugins/)
+- [Built by DevForth](https://devforth.io)

@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "AdminForth plugin for logging all actions (who did what and when)",
+  "description": "Audit log plugin for AdminForth with CRUD diffs, actor tracking, and activity history",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -13,7 +13,19 @@
     "type": "git",
     "url": "https://github.com/devforth/adminforth-audit-log.git"
   },
+  "bugs": {
+    "url": "https://github.com/devforth/adminforth-audit-log/issues"
+  },
   "author": "devforth",
+  "keywords": [
+    "adminforth",
+    "audit-log",
+    "change-tracking",
+    "activity-history",
+    "crud",
+    "compliance",
+    "forensics"
+  ],
   "license": "MIT",
   "dependencies": {
     "dayjs": "^1.11.11"
