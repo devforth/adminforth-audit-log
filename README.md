@@ -17,7 +17,7 @@ Allows you to log changes made to table records via adminforth.
 
 Full setup and configuration guide:
 
-[AdminForth AuditLog Documentation](https://adminforth.dev/docs/tutorial/Plugins/AuditLog/)
+[AdminForth AuditLog Documentation](https://adminforth.dev/docs/tutorial/Plugins/audit-log/)
 
 ## About AdminForth
 
