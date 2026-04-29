@@ -33,7 +33,7 @@ defineExpose({
 });
 
 const props = defineProps<{
-  record: any;
+  record?: any;
   meta: any;
   resource: any;
 }>();
