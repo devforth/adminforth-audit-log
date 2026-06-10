@@ -24,10 +24,11 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     this.shouldHaveSingleInstancePerWholeApp = () => true;
   }
 
+
   instanceUniqueRepresentation(pluginOptions: any) : string {
     return `single`;
   }
-
+ 
   static defaultError = 'Sorry, you do not have access to this resource.'
 
   async getIpAndCountry(headers: Record<string, any>): Promise<{ country: string | null, clientIp: string | null }> {
