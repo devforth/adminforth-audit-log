@@ -231,11 +231,12 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
     const existingResources = [];
     this.adminforth.config.resources.forEach((resource) => {
 
-      existingResources.push({value: resource.resourceId, label: resource.label});
       if (this.options.excludeResourceIds?.includes(resource.resourceId)) {
         return;
       }
-
+      
+      existingResources.push({value: resource.resourceId, label: resource.label});
+      
       resource.options = resource.options || {} as any;
       if (!resource.options.actions) {
         resource.options.actions = [];
