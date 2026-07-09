@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters,  } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters, afLogger,  } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -222,7 +222,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   }
 
 
-modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
+  modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
     const auditLogResourceData = this.adminforth.config.resources.find((r) => r.resourceId === resourceConfig.resourceId);
@@ -332,5 +332,23 @@ modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource
 
     })
     columnToModify.enum = existingResources;
+
+    const recordIdColumn = resourceConfig.columns.find((c) => c.name === this.options.resourceColumns.resourceRecordIdColumnName);
+    if (!recordIdColumn.foreignResource) {
+      for (const resource of existingResources) {
+        if(!recordIdColumn.foreignResource?.polymorphicResources) {
+          recordIdColumn.foreignResource = {
+            polymorphicResources: [],
+            polymorphicOn: this.options.resourceColumns.resourceIdColumnName 
+          };
+        }
+        recordIdColumn.foreignResource.polymorphicResources.push({
+          resourceId: resource.value,
+          whenValue: resource.value
+        });
+      }
+    } else {
+      afLogger.warn(`AuditLogPlugin: Record Id column already has foreignResource. We recomend to remove it, so we can setup it to connect audit log resource with logged resource.`);
+    }
   }
 }
