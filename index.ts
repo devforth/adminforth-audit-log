@@ -164,7 +164,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
-    await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
+    const createResourceRecordResult = await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
+    if (createResourceRecordResult.error) {
+      afLogger.error(`AuditLogPlugin: Error creating log record for resource ${resource.resourceId} action ${action} recordId ${recordId}: ${createResourceRecordResult.error}`);
+    }
     return {ok: true};
   }
 
@@ -218,7 +221,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     }
 
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
-    await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
+    const createResourceRecordResult = await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
+    if (createResourceRecordResult.error) {
+      afLogger.error(`AuditLogPlugin: Error creating log record for resource ${resource.resourceId} action ${action} recordId ${recordId}: ${createResourceRecordResult.error}`);
+    }
   }
 
 
