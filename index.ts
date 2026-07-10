@@ -223,7 +223,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
     const createResourceRecordResult = await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
     if (createResourceRecordResult.error) {
-      afLogger.error(`AuditLogPlugin: Error creating log record for resource ${resource.resourceId} action ${action} recordId ${recordId}: ${createResourceRecordResult.error}`);
+      afLogger.error(`AuditLogPlugin: Error creating log record custom recordId ${recordId}: ${createResourceRecordResult.error}`);
     }
   }
 
