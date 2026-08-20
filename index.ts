@@ -339,6 +339,17 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     })
     columnToModify.enum = existingResources;
 
+    // make resource id clickable in show view, so user can navigate to the list of that resource
+    columnToModify.components = columnToModify.components || {};
+    if (!columnToModify.components.show) {
+      columnToModify.components.show = {
+        file: this.componentPath('ResourceIdLink.vue'),
+        meta: {
+          pluginInstanceId: this.pluginInstanceId,
+        }
+      };
+    }
+
     const recordIdColumn = resourceConfig.columns.find((c) => c.name === this.options.resourceColumns.resourceRecordIdColumnName);
     if (!recordIdColumn.foreignResource) {
       for (const resource of existingResources) {
