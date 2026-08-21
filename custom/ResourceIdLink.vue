@@ -10,7 +10,7 @@
 import { computed } from 'vue';
 import { Link } from '@/afcl';
 import { useCoreStore } from '@/stores/core';
-
+ 
 const props = defineProps<{
   column: any;
   record: any;
