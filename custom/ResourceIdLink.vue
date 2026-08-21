@@ -18,7 +18,7 @@ const props = defineProps<{
   resource: any;
   adminUser: any;
 }>();
- 
+
 const coreStore = useCoreStore();
 
 const value = computed(() => props.record?.[props.column?.name] ?? null);
