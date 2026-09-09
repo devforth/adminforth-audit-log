@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters, afLogger,  } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters, afLogger, isBackendOnly, stripBackendOnly } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -99,12 +99,19 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
     const connector = this.adminforth.connectors[resource.dataSource];
     
-    const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
-    if (action !== AllowedActionsEnum.delete) {
-      oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
-    } else {
-      oldRecord = data
-    }
+    const columnAccessCtx = {
+      adminUser: user,
+      resource,
+      meta: { pk: recordId, requestBody: extra?.body },
+      source: ActionCheckSource.ShowRequest,
+      adminforth: this.adminforth,
+    };
+
+    const rawNewRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
+    const rawOldRecord = action == AllowedActionsEnum.delete ? data : (oldRecord || {});
+    // stripBackendOnly drops backendOnly values too, so the masking below compares the raw records
+    const newRecord = await stripBackendOnly({ ...rawNewRecord }, columnAccessCtx);
+    oldRecord = await stripBackendOnly({ ...rawOldRecord }, columnAccessCtx);
 
     if (action !== AllowedActionsEnum.delete) {
         const columnsNamesList = resource.columns.map((c) => c.name);
@@ -116,39 +123,17 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         });
     }
 
-    const checks = await Promise.all(
-      resource.columns.map(async (c) => {
-        if (typeof c.backendOnly === "function") {
-          const result = await c.backendOnly({
-            adminUser: user,
-            resource,
-            meta: {},
-            source: ActionCheckSource.ShowRequest,
-            adminforth: this.adminforth,
-          });
-          return { col: c, result };
-        }
-        return { col: c, result: c.backendOnly ?? false };
-      })
-    );
-
-    const backendOnlyColumns = checks
-      .filter(({ result }) => result === true)
-      .map(({ col }) => col);
-    
-    backendOnlyColumns.forEach((c) => {
-        if (JSON.stringify(oldRecord[c.name]) != JSON.stringify(newRecord[c.name])) {
-            if (action !== AllowedActionsEnum.delete) {
-                newRecord[c.name] = '<hidden value after>'
-            }
-            if (action !== AllowedActionsEnum.create) {
-                oldRecord[c.name] = '<hidden value before>'
-            }
-        } else {
-            delete oldRecord[c.name];
-            delete newRecord[c.name];
-        }
-    });
+    for (const c of resource.columns) {
+      if (!(await isBackendOnly(c, columnAccessCtx)) || JSON.stringify(rawOldRecord[c.name]) == JSON.stringify(rawNewRecord[c.name])) {
+        continue;
+      }
+      if (action !== AllowedActionsEnum.delete) {
+        newRecord[c.name] = '<hidden value after>'
+      }
+      if (action !== AllowedActionsEnum.create) {
+        oldRecord[c.name] = '<hidden value before>'
+      }
+    }
 
     const { country, clientIp } = await this.getIpAndCountry(extra?.headers || {});
 
