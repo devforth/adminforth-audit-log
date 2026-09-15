@@ -19,6 +19,7 @@
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { IconClockSolid } from '@iconify-prerendered/vue-flowbite';
+import { encodeRecordId } from '@/utils/recordId';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -50,10 +51,21 @@ const to = computed(() => {
     if (!resourceColumns) return null;
 
     const pkName = props.meta?.pkName 
+    const pkNames = props.meta?.pkNames?.length ? props.meta.pkNames : [pkName];
   
     const isShowPage = route.name === 'resource-show' || route.name === 'resource-edit';
 
-    let recordId = props.record?.[pkName];
+    // for composite primary key record id is glued from all key columns, so build it the same way as backend does
+    const pkResource = props.resource?.columns?.some((c: any) => c.primaryKey)
+      ? props.resource
+      : { columns: pkNames.map((name: string) => ({ name, primaryKey: true })) };
+
+    let recordId: any = undefined;
+    try {
+      recordId = props.record ? encodeRecordId(pkResource as any, props.record) : undefined;
+    } catch (e) {
+      // record has no values of all key columns, fall back to record id from route below
+    }
     
     if (!recordId && isShowPage) {
         recordId = route.params.primaryKey || route.params.id;
