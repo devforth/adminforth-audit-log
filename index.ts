@@ -12,6 +12,14 @@ import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
 
+type AdminUserWithExecutor = AdminUser & { executedBy?: string };
+
+function executedByRecord(options: PluginOptions, user: AdminUser): Record<string, string> {
+  const columnName = options.resourceColumns.resourceExecutedByColumnName;
+  const executedBy = (user as AdminUserWithExecutor).executedBy;
+  return columnName && executedBy ? { [columnName]: executedBy } : {};
+}
+
 export default class AuditLogPlugin extends AdminForthPlugin {
  
   options: PluginOptions;
@@ -160,6 +168,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       // utc iso string
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
+      ...executedByRecord(this.options, user),
       ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
       ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
@@ -216,6 +225,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceUserIdColumnName]: user.pk,
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
+      ...executedByRecord(this.options, user),
       ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
       ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
@@ -274,6 +284,10 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     }
 
       if (this.auditLogResource === resource.resourceId) {
+        const executedByColumnName = this.options.resourceColumns.resourceExecutedByColumnName;
+        if (executedByColumnName && !resource.columns.some((column) => column.name === executedByColumnName)) {
+          throw new Error(`Column ${executedByColumnName} not found in ${resource.label}`);
+        }
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
         if (!diffColumn) {
           throw new Error(`Column ${this.options.resourceColumns.resourceDataColumnName} not found in ${resource.label}`)

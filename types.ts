@@ -38,6 +38,11 @@ export interface PluginOptions extends PluginsCommonOptions {
 
         resourceCreatedColumnName: string
 
+        /**
+         * Optional column for the software actor executing an action on behalf of the user.
+         */
+        resourceExecutedByColumnName?: string
+
         resourceCountryColumnName?: string
         
         resourceIpColumnName?: string
