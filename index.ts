@@ -7,7 +7,7 @@ import type {
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js';
 
-import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters, afLogger,  } from "adminforth";
+import { AdminForthPlugin, AllowedActionsEnum, AdminForthSortDirections, AdminForthDataTypes, HttpExtra, ActionCheckSource, Filters, afLogger, encodeRecordId, isCompositePrimaryKey, primaryKeyColumnNames,  } from "adminforth";
 import { PluginOptions } from "./types.js";
 
 dayjs.extend(utc);
@@ -95,8 +95,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       return { ok: true };
     }
     
-    const recordIdFieldName = resource.columns.find((c) => c.primaryKey === true)?.name;
-    const recordId = data?.[recordIdFieldName] || oldRecord?.[recordIdFieldName];
+    // record id is built from all primary key columns, so resources with composite primary key are supported
+    const recordId = encodeRecordId(resource, { ...(oldRecord || {}), ...(data || {}) });
     const connector = this.adminforth.connectors[resource.dataSource];
     
     const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
@@ -266,6 +266,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
               auditLogResourceId: this.auditLogResource,
               resourceColumns: this.options.resourceColumns,
               pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
+              // all primary key columns, so component can build record id of composite primary key resource
+              pkNames: primaryKeyColumnNames(resource),
               title: 'Edit History'
             }
           }
@@ -331,6 +333,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             auditLogResourceId: this.auditLogResource,
             resourceColumns: this.options.resourceColumns,
             pkName: resource.columns.find((c) => c.primaryKey)?.name || 'id',
+            // all primary key columns, so component can build record id of composite primary key resource
+            pkNames: primaryKeyColumnNames(resource),
             title: 'Edit History'
           }
         });
@@ -353,6 +357,12 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const recordIdColumn = resourceConfig.columns.find((c) => c.name === this.options.resourceColumns.resourceRecordIdColumnName);
     if (!recordIdColumn.foreignResource) {
       for (const resource of existingResources) {
+        // core does not support foreignResource pointing to resource with composite primary key yet,
+        // so such resources are still logged, but their record id is not clickable
+        const targetResource = this.adminforth.config.resources.find((r) => r.resourceId === resource.value);
+        if (targetResource && isCompositePrimaryKey(targetResource)) {
+          continue;
+        }
         if(!recordIdColumn.foreignResource?.polymorphicResources) {
           recordIdColumn.foreignResource = {
             polymorphicResources: [],
