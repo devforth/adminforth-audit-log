@@ -9,7 +9,7 @@
       class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
     />
     <span class="whitespace-nowrap">
-      {{ meta?.title || 'Edit History' }}
+      {{ $t(meta?.title || 'Edit History') }}
     </span>
   </RouterLink>
 </template>
