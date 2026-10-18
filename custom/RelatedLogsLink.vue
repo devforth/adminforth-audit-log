@@ -5,8 +5,8 @@
     class="flex items-center w-full gap-2
            text-left text-sm leading-5"
   >
-    <IconClockSolid
-      class="w-4 h-4 shrink-0 text-gray-500 dark:text-gray-400"
+    <IconHistory
+      class="w-4 h-4 shrink-0 text-lightInputIconColor dark:text-darkInputIconColor"
     />
     <span class="whitespace-nowrap">
       {{ meta?.title || 'Edit History' }}
@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { IconClockSolid } from '@iconify-prerendered/vue-flowbite';
+import { IconHistory } from '@iconify-prerendered/vue-lucide';
 import { encodeRecordId } from '@/utils/recordId';
 import { useRouter } from 'vue-router';
 
@@ -40,8 +40,6 @@ const props = defineProps<{
 }>();
 
 const route = useRoute(); 
-
-console.log('Current Route Name:', route.name);
 
 const to = computed(() => {
   try {

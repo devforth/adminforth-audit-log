@@ -1,9 +1,9 @@
 <template>
-  <Link class="font-semibold no-underline" v-if="targetResourceId" :to="`/resource/${targetResourceId}`">
+  <Link class="no-underline" v-if="targetResourceId" :to="`/resource/${targetResourceId}`">
     {{ label }}
   </Link>
   <span v-else-if="label">{{ label }}</span>
-  <span v-else class="text-gray-400">-</span>
+  <span v-else class="text-lightInputPlaceholderText dark:text-darkInputPlaceholderText">-</span>
 </template>
 
 <script setup lang="ts">
