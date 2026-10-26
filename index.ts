@@ -287,8 +287,17 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
       if (this.auditLogResource === resource.resourceId) {
         const executedByColumnName = this.options.resourceColumns.resourceExecutedByColumnName;
-        if (executedByColumnName && !resource.columns.some((column) => column.name === executedByColumnName)) {
-          throw new Error(`Column ${executedByColumnName} not found in ${resource.label}`);
+        if (executedByColumnName) {
+          const executedByColumn = resource.columns.find((column) => column.name === executedByColumnName);
+          if (!executedByColumn) {
+            throw new Error(`Column ${executedByColumnName} not found in ${resource.label}`);
+          }
+          // the agent is shown with its logo, components set in the resource config win
+          executedByColumn.components = {
+            list: { file: this.componentPath('ExecutedBy.vue') },
+            show: { file: this.componentPath('ExecutedBy.vue') },
+            ...executedByColumn.components,
+          };
         }
         let diffColumn = resource.columns.find((c) => c.name === this.options.resourceColumns.resourceDataColumnName); 
         if (!diffColumn) {

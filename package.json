@@ -34,7 +34,7 @@
     "build": "tsc && rsync -av --exclude 'node_modules' custom dist/"
   },
   "peerDependencies": {
-    "adminforth": "^4.7.3"
+    "adminforth": "^4.19.0"
   },
   "release": {
     "plugins": [
