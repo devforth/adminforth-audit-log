@@ -68,8 +68,6 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     const ipCol = this.options.resourceColumns.resourceIpColumnName;
     const countryCol = this.options.resourceColumns.resourceCountryColumnName;
 
-    //TODO fix ts-ignore after release new adminforth version with proper types
-    //@ts-ignore
     const existingLog = await this.adminforth.resource(this.auditLogResource).get(Filters.AND(Filters.EQ(ipCol, clientIp), Filters.IS_NOT_EMPTY(countryCol)));
     if (existingLog) {
       return existingLog[countryCol];
@@ -172,10 +170,9 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
       ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
-    const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
-    const createResourceRecordResult = await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
-    if (createResourceRecordResult.error) {
-      afLogger.error(`AuditLogPlugin: Error creating log record for resource ${resource.resourceId} action ${action} recordId ${recordId}: ${createResourceRecordResult.error}`);
+    const { error } = await this.adminforth.resource(this.auditLogResource).asSystem({ adminUser: user }).create(record);
+    if (error) {
+      afLogger.error(`AuditLogPlugin: Error creating log record for resource ${resource.resourceId} action ${action} recordId ${recordId}: ${error}`);
     }
     return {ok: true};
   }
@@ -230,10 +227,9 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
     }
 
-    const auditLogResource = this.adminforth.config.resources.find((r) => r.resourceId === this.auditLogResource);
-    const createResourceRecordResult = await this.adminforth.createResourceRecord({ resource: auditLogResource, record, adminUser: user});
-    if (createResourceRecordResult.error) {
-      afLogger.error(`AuditLogPlugin: Error creating log record custom recordId ${recordId}: ${createResourceRecordResult.error}`);
+    const { error } = await this.adminforth.resource(this.auditLogResource).asSystem({ adminUser: user }).create(record);
+    if (error) {
+      afLogger.error(`AuditLogPlugin: Error creating log record custom recordId ${recordId}: ${error}`);
     }
   }
 
