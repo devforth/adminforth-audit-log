@@ -23,8 +23,7 @@ function executedByRecord(options: PluginOptions, user: AdminUser): Record<strin
 export default class AuditLogPlugin extends AdminForthPlugin {
  
   options: PluginOptions;
-  adminforth: IAdminForth;
-  auditLogResource: string;
+  auditLogResource!: string;
 
   constructor(options: PluginOptions) {
     super(options, import.meta.url);
@@ -65,8 +64,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     }
 
     //  DB CHECK
-    const ipCol = this.options.resourceColumns.resourceIpColumnName;
-    const countryCol = this.options.resourceColumns.resourceCountryColumnName;
+    const ipCol = this.options.resourceColumns.resourceIpColumnName!;
+    const countryCol = this.options.resourceColumns.resourceCountryColumnName!;
 
     const existingLog = await this.adminforth.resource(this.auditLogResource).get(Filters.AND(Filters.EQ(ipCol, clientIp), Filters.IS_NOT_EMPTY(countryCol)));
     if (existingLog) {
@@ -95,7 +94,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
 
     return null;
   }
-  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Object, user: AdminUser, oldRecord?: Object, extra?: HttpExtra) => {
+  createLogRecord = async (resource: AdminForthResource, action: AllowedActionsEnum | string, data: Record<string, any>, user: AdminUser, oldRecord?: Record<string, any>, extra?: HttpExtra) => {
     if (user.isExternalUser) {
       // audit log does not support logging for external (non-adminforth) users.
       return { ok: true };
@@ -107,7 +106,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     
     const newRecord = action == AllowedActionsEnum.delete ? {} : (await connector.getRecordByPrimaryKey(resource, recordId)) || {};
     if (action !== AllowedActionsEnum.delete) {
-      oldRecord = oldRecord ? JSON.parse(JSON.stringify(oldRecord)) : {};
+      oldRecord = JSON.parse(JSON.stringify(oldRecord || {})) as Record<string, any>;
     } else {
       oldRecord = data
     }
@@ -167,8 +166,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       // utc iso string
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
       ...executedByRecord(this.options, user),
-      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
-      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName!]: clientIp} : {}),
+      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName!]: country } : {}),
     }
     const { error } = await this.adminforth.resource(this.auditLogResource).asSystem({ adminUser: user }).create(record);
     if (error) {
@@ -209,7 +208,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       const resource = this.adminforth.config.resources.find((r) => r.resourceId === resourceId);
       if (!resource) {
         const similarResource = this.adminforth.config.resources.find((r) => r.resourceId.includes(resourceId));
-        throw new Error(`Resource ${resourceId} not found. Did you mean ${similarResource.resourceId}?`)
+        throw new Error(`Resource ${resourceId} not found. Did you mean ${similarResource?.resourceId}?`)
       }
     }
 
@@ -223,8 +222,8 @@ export default class AuditLogPlugin extends AdminForthPlugin {
       [this.options.resourceColumns.resourceRecordIdColumnName]: recordId,
       [this.options.resourceColumns.resourceCreatedColumnName]: dayjs.utc().format(),
       ...executedByRecord(this.options, user),
-      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName]: clientIp} : {}),
-      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName]: country } : {}),
+      ...(clientIp ? {[this.options.resourceColumns.resourceIpColumnName!]: clientIp} : {}),
+      ...(country ? {[this.options.resourceColumns.resourceCountryColumnName!]: country } : {}),
     }
 
     const { error } = await this.adminforth.resource(this.auditLogResource).asSystem({ adminUser: user }).create(record);
@@ -237,10 +236,12 @@ export default class AuditLogPlugin extends AdminForthPlugin {
   modifyResourceConfig(adminforth: IAdminForth, resourceConfig: AdminForthResource) {
     super.modifyResourceConfig(adminforth, resourceConfig);
     this.adminforth = adminforth;
-    const auditLogResourceData = this.adminforth.config.resources.find((r) => r.resourceId === resourceConfig.resourceId);
-    const columnToModify = auditLogResourceData.columns.find((c) => c.name === this.options.resourceColumns.resourceIdColumnName);
+    const columnToModify = resourceConfig.columns.find((c) => c.name === this.options.resourceColumns.resourceIdColumnName);
+    if (!columnToModify) {
+      throw new Error(`Column ${this.options.resourceColumns.resourceIdColumnName} not found in ${resourceConfig.label}`)
+    }
     this.auditLogResource = resourceConfig.resourceId;
-    const existingResources = [];
+    const existingResources: { value: string, label: string }[] = [];
     this.adminforth.config.resources.forEach((resource) => {
 
       if (this.options.excludeResourceIds?.includes(resource.resourceId)) {
@@ -317,15 +318,16 @@ export default class AuditLogPlugin extends AdminForthPlugin {
         return;
       };
 
-      resource.hooks.edit.afterSave.push(async ({ resource, updates, adminUser, oldRecord, extra }) => {
+      const hooks = resource.hooks!;
+      hooks.edit!.afterSave!.push(async ({ resource, updates, adminUser, oldRecord, extra }) => {
         return await this.createLogRecord(resource, 'edit' as AllowedActionsEnum, updates, adminUser, oldRecord, extra)
       });
 
-      resource.hooks.delete.afterSave.push(async ({ resource, record, adminUser, extra }) => {
+      hooks.delete!.afterSave!.push(async ({ resource, record, adminUser, extra }) => {
         return await this.createLogRecord(resource, 'delete' as AllowedActionsEnum, record, adminUser, record, extra)
       });
 
-      resource.hooks.create.afterSave.push(async ({ resource, record, adminUser, extra }) => {
+      hooks.create!.afterSave!.push(async ({ resource, record, adminUser, extra }) => {
         return await this.createLogRecord(resource, 'create' as AllowedActionsEnum, record, adminUser, undefined, extra)
       });
 
@@ -365,6 +367,9 @@ export default class AuditLogPlugin extends AdminForthPlugin {
     }
 
     const recordIdColumn = resourceConfig.columns.find((c) => c.name === this.options.resourceColumns.resourceRecordIdColumnName);
+    if (!recordIdColumn) {
+      throw new Error(`Column ${this.options.resourceColumns.resourceRecordIdColumnName} not found in ${resourceConfig.label}`)
+    }
     if (!recordIdColumn.foreignResource) {
       for (const resource of existingResources) {
         // core does not support foreignResource pointing to resource with composite primary key yet,
@@ -379,7 +384,7 @@ export default class AuditLogPlugin extends AdminForthPlugin {
             polymorphicOn: this.options.resourceColumns.resourceIdColumnName 
           };
         }
-        recordIdColumn.foreignResource.polymorphicResources.push({
+        recordIdColumn.foreignResource.polymorphicResources!.push({
           resourceId: resource.value,
           whenValue: resource.value
         });
